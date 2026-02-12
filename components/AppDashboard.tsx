@@ -6,7 +6,8 @@ import {
   ChevronDown, Plus, TrendingDown, Clock, Settings,
   LogOut, ChevronRight, Trash2, RefreshCw, ArrowLeftRight,
   Sparkles, Target, X, Hotel, Car, Palmtree, MapPin,
-  Shield, TrendingUp, AlertTriangle, Lock, Info
+  Shield, TrendingUp, AlertTriangle, Lock, Info, Briefcase,
+  CheckCircle, ExternalLink
 } from 'lucide-react';
 import AirportAutocomplete from './AirportAutocomplete';
 
@@ -148,6 +149,41 @@ const saveItems = (items: CartItem[]) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 };
 
+// Booked trips
+interface BookedTrip {
+  id: string;
+  origin: string;
+  destination: string;
+  departure_date: string;
+  return_date: string | null;
+  travelers: number;
+  price_paid: number;
+  original_price: number;
+  booked_at: string;
+  status: 'upcoming' | 'completed' | 'cancelled';
+  booking_ref: string;
+}
+
+const TRIPS_KEY = 'travelcart_trips';
+
+const loadTrips = (): BookedTrip[] => {
+  if (typeof window === 'undefined') return [];
+  const saved = localStorage.getItem(TRIPS_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
+const saveTrips = (trips: BookedTrip[]) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(TRIPS_KEY, JSON.stringify(trips));
+};
+
 export default function AppDashboard() {
   // Search form state
   const [origin, setOrigin] = useState('');
@@ -175,6 +211,8 @@ export default function AppDashboard() {
   const [userEmail, setUserEmail] = useState('');
   const [userPhone, setUserPhone] = useState('');
   const [notifSaved, setNotifSaved] = useState(false);
+  const [trips, setTrips] = useState<BookedTrip[]>([]);
+  const [showMyTrips, setShowMyTrips] = useState(false);
   const [cityIndex, setCityIndex] = useState(0);
   const [showSearchExpanded, setShowSearchExpanded] = useState(false);
   const [pushNotification, setPushNotification] = useState<CartItem | null>(null);
@@ -197,9 +235,10 @@ export default function AppDashboard() {
     }
   }, [items, selectedItem]);
 
-  // Load items on mount
+  // Load items and trips on mount
   useEffect(() => {
     setItems(loadItems());
+    setTrips(loadTrips());
     setLoading(false);
   }, []);
 
@@ -209,6 +248,13 @@ export default function AppDashboard() {
       saveItems(items);
     }
   }, [items, loading]);
+
+  // Save trips when changed
+  useEffect(() => {
+    if (!loading) {
+      saveTrips(trips);
+    }
+  }, [trips, loading]);
 
   // Swap origin and destination
   const handleSwap = () => {
@@ -338,6 +384,29 @@ export default function AppDashboard() {
     setRefreshing(false);
   };
 
+  // Book a trip (move from watchlist to booked trips)
+  const handleBookTrip = (item: CartItem) => {
+    const ref = `TC-${Date.now().toString(36).toUpperCase()}`;
+    const departure = new Date(item.departure_date);
+    const now = new Date();
+    const newTrip: BookedTrip = {
+      id: `trip-${Date.now()}`,
+      origin: item.origin,
+      destination: item.destination,
+      departure_date: item.departure_date,
+      return_date: item.return_date,
+      travelers: item.travelers,
+      price_paid: item.current_price,
+      original_price: item.baseline_price,
+      booked_at: new Date().toISOString(),
+      status: departure > now ? 'upcoming' : 'completed',
+      booking_ref: ref,
+    };
+    setTrips([newTrip, ...trips]);
+    setItems(items.filter(i => i.id !== item.id));
+    setSelectedItem(null);
+  };
+
   // Format date
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -366,6 +435,18 @@ export default function AppDashboard() {
 
             {/* Right side */}
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowMyTrips(true)}
+                className="relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
+              >
+                <Briefcase className="w-4 h-4" />
+                <span className="hidden sm:inline">My Trips</span>
+                {trips.length > 0 && (
+                  <span className="w-5 h-5 bg-indigo-100 text-indigo-600 rounded-full text-[10px] font-bold flex items-center justify-center">
+                    {trips.length}
+                  </span>
+                )}
+              </button>
               <button
                 onClick={() => {
                   if (readyToBuy > 0) {
@@ -1119,6 +1200,15 @@ export default function AppDashboard() {
                     </button>
                   )}
 
+                  {/* Mark as Booked */}
+                  <button
+                    onClick={() => handleBookTrip(selectedItem)}
+                    className="w-full py-3 border-2 border-emerald-200 text-emerald-700 rounded-xl font-semibold hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 text-sm"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Mark as Booked
+                  </button>
+
                   {/* Remove */}
                   <button
                     onClick={() => {
@@ -1568,6 +1658,16 @@ export default function AppDashboard() {
                   </div>
                 )}
                 <button
+                  onClick={() => setShowMyTrips(true)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all text-sm"
+                >
+                  <Briefcase className="w-4 h-4" />
+                  <span>My Trips</span>
+                  {trips.length > 0 && (
+                    <span className="ml-auto text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{trips.length}</span>
+                  )}
+                </button>
+                <button
                   onClick={() => {
                     window.open('https://calendar.google.com', '_blank');
                   }}
@@ -1588,6 +1688,165 @@ export default function AppDashboard() {
           </div>
         </div>
       </main>
+
+      {/* My Trips Modal */}
+      {showMyTrips && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowMyTrips(false); }}
+        >
+          <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl max-h-[85vh] flex flex-col">
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">My Trips</h2>
+                  <p className="text-xs text-gray-400">{trips.length} booking{trips.length !== 1 ? 's' : ''}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowMyTrips(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="px-6 pt-3 flex gap-1 flex-shrink-0">
+              {['all', 'upcoming', 'completed', 'cancelled'].map((tab) => {
+                const count = tab === 'all' ? trips.length : trips.filter(t => t.status === tab).length;
+                return (
+                  <button
+                    key={tab}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium capitalize text-gray-500 hover:bg-gray-100 transition-all"
+                  >
+                    {tab} {count > 0 && <span className="ml-1 text-gray-300">{count}</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Trip List */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {trips.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Briefcase className="w-8 h-8 text-indigo-300" />
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">No trips yet</h3>
+                  <p className="text-sm text-gray-400 mb-1">Your booked flights will appear here</p>
+                  <p className="text-xs text-gray-300">Search for a flight and mark it as booked to get started</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {trips.map((trip) => {
+                    const saved = trip.original_price - trip.price_paid;
+                    const isUpcoming = trip.status === 'upcoming';
+                    const departure = new Date(trip.departure_date);
+                    const now = new Date();
+                    const daysUntil = Math.ceil((departure.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+                    return (
+                      <div
+                        key={trip.id}
+                        className={`rounded-2xl border p-4 transition-all ${
+                          isUpcoming ? 'border-indigo-100 bg-gradient-to-r from-white to-indigo-50/30' : 'border-gray-100 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-gray-900">
+                                {getCityName(trip.origin)}
+                                <span className="text-gray-300 mx-1.5">&rarr;</span>
+                                {getCityName(trip.destination)}
+                              </h3>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                                trip.status === 'upcoming'
+                                  ? 'bg-indigo-100 text-indigo-700'
+                                  : trip.status === 'completed'
+                                    ? 'bg-emerald-100 text-emerald-700'
+                                    : 'bg-gray-100 text-gray-500'
+                              }`}>
+                                {trip.status}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {trip.origin}&ndash;{trip.destination}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-gray-900">${Math.round(trip.price_paid).toLocaleString()}</p>
+                            {saved > 0 && (
+                              <p className="text-xs text-emerald-600 font-medium">Saved ${Math.round(saved)}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {formatDateWithDay(trip.departure_date)}
+                            {trip.return_date && (
+                              <> &rarr; {formatDateWithDay(trip.return_date)}</>
+                            )}
+                          </span>
+                          <span>{trip.travelers} traveler{trip.travelers > 1 ? 's' : ''}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] text-gray-400 font-mono">Ref: {trip.booking_ref}</span>
+                            {isUpcoming && daysUntil > 0 && (
+                              <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                {daysUntil} day{daysUntil !== 1 ? 's' : ''} away
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (confirm('Remove this trip from your history?')) {
+                                setTrips(trips.filter(t => t.id !== trip.id));
+                              }
+                            }}
+                            className="p-1.5 text-gray-300 hover:text-red-400 rounded-lg transition-all"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            {trips.length > 0 && (
+              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex-shrink-0">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Total spent</span>
+                  <span className="font-bold text-gray-900">
+                    ${Math.round(trips.reduce((sum, t) => sum + t.price_paid * t.travelers, 0)).toLocaleString()}
+                  </span>
+                </div>
+                {trips.reduce((sum, t) => sum + (t.original_price - t.price_paid), 0) > 0 && (
+                  <div className="flex items-center justify-between text-sm mt-1">
+                    <span className="text-emerald-600">Total saved with TravelCart</span>
+                    <span className="font-bold text-emerald-600">
+                      ${Math.round(trips.reduce((sum, t) => sum + (t.original_price - t.price_paid) * t.travelers, 0)).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Push Notification Toast */}
       {pushNotification && !selectedItem && (
