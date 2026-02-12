@@ -154,6 +154,7 @@ export default function AppDashboard() {
   const [cityIndex, setCityIndex] = useState(0);
   const [showSearchExpanded, setShowSearchExpanded] = useState(false);
   const [pushNotification, setPushNotification] = useState<CartItem | null>(null);
+  const [filter, setFilter] = useState<'all' | 'buy'>('all');
 
   // Cycle hero city backgrounds
   useEffect(() => {
@@ -323,6 +324,7 @@ export default function AppDashboard() {
   const totalBaseline = items.reduce((sum, item) => sum + item.baseline_price * item.travelers, 0);
   const totalSaved = totalBaseline - totalCurrent;
   const readyToBuy = items.filter(i => i.signal === 'BUY').length;
+  const filteredItems = filter === 'buy' ? items.filter(i => i.signal === 'BUY') : items;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
@@ -1108,9 +1110,17 @@ export default function AppDashboard() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <div className="w-1.5 h-5 bg-gradient-to-b from-indigo-500 to-violet-500 rounded-full" />
-                Your Watchlist
-                {items.length > 0 && (
-                  <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{items.length}</span>
+                {filter === 'buy' ? 'Ready to Book' : 'Your Watchlist'}
+                {filteredItems.length > 0 && (
+                  <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{filteredItems.length}</span>
+                )}
+                {filter !== 'all' && (
+                  <button
+                    onClick={() => setFilter('all')}
+                    className="text-xs font-medium text-indigo-600 hover:text-indigo-700 ml-1"
+                  >
+                    Show all
+                  </button>
                 )}
               </h2>
               {items.length > 0 && (
@@ -1139,9 +1149,23 @@ export default function AppDashboard() {
                 <p className="text-gray-500 mb-1">Search for a flight above to start tracking prices</p>
                 <p className="text-sm text-gray-400">Our AI will watch for the perfect moment to book</p>
               </div>
+            ) : filteredItems.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-emerald-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No flights ready to book</h3>
+                <p className="text-gray-500 text-sm mb-3">None of your watched flights have hit their target price yet.</p>
+                <button
+                  onClick={() => setFilter('all')}
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                >
+                  View all {items.length} watched flights
+                </button>
+              </div>
             ) : (
               <div className="space-y-4">
-                {items.map(item => {
+                {filteredItems.map(item => {
                   const isBuySignal = item.signal === 'BUY';
                   const isSpikeSignal = item.signal === 'SPIKE';
                   const priceDiff = item.current_price - item.baseline_price;
@@ -1349,14 +1373,28 @@ export default function AppDashboard() {
               </h3>
 
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="bg-gray-50 rounded-xl p-3.5 text-center">
+                <button
+                  onClick={() => setFilter('all')}
+                  className={`rounded-xl p-3.5 text-center transition-all cursor-pointer ${
+                    filter === 'all'
+                      ? 'bg-indigo-50 ring-2 ring-indigo-300'
+                      : 'bg-gray-50 hover:bg-gray-100'
+                  }`}
+                >
                   <p className="text-2xl font-bold text-gray-900">{items.length}</p>
                   <p className="text-xs text-gray-400 mt-0.5">Watching</p>
-                </div>
-                <div className="bg-emerald-50 rounded-xl p-3.5 text-center">
+                </button>
+                <button
+                  onClick={() => setFilter('buy')}
+                  className={`rounded-xl p-3.5 text-center transition-all cursor-pointer ${
+                    filter === 'buy'
+                      ? 'bg-emerald-100 ring-2 ring-emerald-400'
+                      : 'bg-emerald-50 hover:bg-emerald-100'
+                  }`}
+                >
                   <p className="text-2xl font-bold text-emerald-600">{readyToBuy}</p>
                   <p className="text-xs text-emerald-500 mt-0.5">Ready to book</p>
-                </div>
+                </button>
               </div>
 
               <div className="bg-gray-50 rounded-xl p-4">
