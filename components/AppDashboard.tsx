@@ -1481,30 +1481,36 @@ export default function AppDashboard() {
                   <ChevronRight className={`w-4 h-4 ml-auto transition-transform ${showNotifSettings ? 'rotate-90' : ''}`} />
                 </button>
                 {showNotifSettings && (
-                  <div className="ml-10 space-y-2 py-2">
-                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={notifEmail}
-                        onChange={() => setNotifEmail(!notifEmail)}
-                        className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      Email alerts
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={notifPush}
-                        onChange={() => {
-                          setNotifPush(!notifPush);
-                          if (!notifPush && 'Notification' in window) {
-                            Notification.requestPermission();
-                          }
-                        }}
-                        className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      Push notifications
-                    </label>
+                  <div className="ml-10 space-y-3 py-2">
+                    <div>
+                      <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notifEmail}
+                          onChange={() => setNotifEmail(!notifEmail)}
+                          className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        Email alerts
+                      </label>
+                      <p className="text-xs text-gray-400 ml-6 mt-0.5">Get price drop alerts sent to your inbox</p>
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notifPush}
+                          onChange={() => {
+                            setNotifPush(!notifPush);
+                            if (!notifPush && 'Notification' in window) {
+                              Notification.requestPermission();
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        Push notifications
+                      </label>
+                      <p className="text-xs text-gray-400 ml-6 mt-0.5">Instant browser alerts when prices hit your target</p>
+                    </div>
                   </div>
                 )}
                 <button
