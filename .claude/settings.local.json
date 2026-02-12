@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm view:*)",
+      "Bash(npm install:*)",
+      "Bash(npx next dev:*)",
+      "Bash(cmd:*)",
+      "Bash(if not exist \"c:\\\\Users\\\\GRAND\\\\Documents\\\\Travelcart_Development\\\\travelcart.app\\\\app\\\\app\" mkdir \"c:\\\\Users\\\\GRAND\\\\Documents\\\\Travelcart_Development\\\\travelcart.app\\\\app\\\\app\")",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
