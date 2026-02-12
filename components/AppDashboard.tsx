@@ -11,11 +11,31 @@ import {
 import AirportAutocomplete from './AirportAutocomplete';
 
 const HERO_CITIES = [
-  { name: 'Paris, France', gradient: 'from-sky-400 via-blue-500 to-indigo-600' },
-  { name: 'Tokyo, Japan', gradient: 'from-rose-400 via-pink-500 to-fuchsia-600' },
-  { name: 'New York, USA', gradient: 'from-amber-400 via-orange-500 to-red-500' },
-  { name: 'Santorini, Greece', gradient: 'from-cyan-400 via-sky-500 to-blue-600' },
-  { name: 'Dubai, UAE', gradient: 'from-yellow-400 via-amber-500 to-orange-600' },
+  {
+    name: 'Paris, France',
+    gradient: 'from-sky-400 via-blue-500 to-indigo-600',
+    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1920&q=80',
+  },
+  {
+    name: 'Tokyo, Japan',
+    gradient: 'from-rose-400 via-pink-500 to-fuchsia-600',
+    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1920&q=80',
+  },
+  {
+    name: 'New York, USA',
+    gradient: 'from-amber-400 via-orange-500 to-red-500',
+    image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=1920&q=80',
+  },
+  {
+    name: 'Santorini, Greece',
+    gradient: 'from-cyan-400 via-sky-500 to-blue-600',
+    image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1920&q=80',
+  },
+  {
+    name: 'Dubai, UAE',
+    gradient: 'from-yellow-400 via-amber-500 to-orange-600',
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1920&q=80',
+  },
 ];
 
 // Airport code to city name mapping for better UX
@@ -374,18 +394,28 @@ export default function AppDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section - Hopper Style */}
         <div className="relative mb-8 rounded-2xl overflow-hidden" style={{ minHeight: '420px' }}>
-          {/* Cycling City Backgrounds */}
+          {/* Cycling City Backgrounds with Images */}
           {HERO_CITIES.map((city, i) => (
             <div
               key={city.name}
-              className={`absolute inset-0 bg-gradient-to-br ${city.gradient} transition-opacity duration-1000 ${
+              className={`absolute inset-0 transition-opacity duration-1000 ${
                 i === cityIndex ? 'opacity-100' : 'opacity-0'
               }`}
-            />
+            >
+              {/* Gradient fallback */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${city.gradient}`} />
+              {/* City photo */}
+              <img
+                src={city.image}
+                alt={city.name}
+                className="absolute inset-0 w-full h-full object-cover"
+                loading={i === 0 ? 'eager' : 'lazy'}
+              />
+            </div>
           ))}
 
           {/* Overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-black/30" />
 
           {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
