@@ -8,6 +8,7 @@ import {
   Sparkles, Target, X, Hotel, Car, Palmtree, MapPin,
   Shield, TrendingUp, AlertTriangle, Lock, Info
 } from 'lucide-react';
+import AirportAutocomplete from './AirportAutocomplete';
 
 const HERO_CITIES = [
   { name: 'Paris, France', gradient: 'from-sky-400 via-blue-500 to-indigo-600' },
@@ -69,7 +70,9 @@ const saveItems = (items: CartItem[]) => {
 export default function AppDashboard() {
   // Search form state
   const [origin, setOrigin] = useState('');
+  const [originDisplay, setOriginDisplay] = useState('');
   const [destination, setDestination] = useState('');
+  const [destinationDisplay, setDestinationDisplay] = useState('');
   const [departureDate, setDepartureDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [travelers, setTravelers] = useState(1);
@@ -123,9 +126,12 @@ export default function AppDashboard() {
 
   // Swap origin and destination
   const handleSwap = () => {
-    const temp = origin;
+    const tempCode = origin;
+    const tempDisplay = originDisplay;
     setOrigin(destination);
-    setDestination(temp);
+    setOriginDisplay(destinationDisplay);
+    setDestination(tempCode);
+    setDestinationDisplay(tempDisplay);
   };
 
   // Search flights
@@ -367,11 +373,11 @@ export default function AppDashboard() {
                   <div className="flex-1 flex items-center divide-x divide-gray-200">
                     <div className="flex-1 px-6 py-4">
                       <p className="text-xs font-semibold text-gray-500">From</p>
-                      <p className="text-sm text-gray-400">{origin || 'Where from?'}</p>
+                      <p className="text-sm text-gray-400 truncate">{originDisplay || origin || 'Where from?'}</p>
                     </div>
                     <div className="flex-1 px-6 py-4">
                       <p className="text-xs font-semibold text-gray-500">To</p>
-                      <p className="text-sm text-gray-400">{destination || 'Where to?'}</p>
+                      <p className="text-sm text-gray-400 truncate">{destinationDisplay || destination || 'Where to?'}</p>
                     </div>
                     <div className="flex-1 px-6 py-4 hidden sm:block">
                       <p className="text-xs font-semibold text-gray-500">Dates</p>
@@ -430,30 +436,27 @@ export default function AppDashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     <div className="relative">
                       <label className="block text-xs font-semibold text-gray-500 mb-1">From</label>
-                      <div className="relative">
-                        <Plane className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          type="text"
-                          value={origin}
-                          onChange={(e) => setOrigin(e.target.value)}
-                          placeholder="City or airport"
-                          autoFocus
-                          className="w-full pl-9 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:bg-white text-gray-900 placeholder-gray-400 text-sm"
-                        />
-                      </div>
+                      <AirportAutocomplete
+                        value={origin}
+                        onChange={(code, display) => {
+                          setOrigin(code);
+                          setOriginDisplay(display);
+                        }}
+                        placeholder="City or airport"
+                        icon="origin"
+                      />
                     </div>
                     <div className="relative">
                       <label className="block text-xs font-semibold text-gray-500 mb-1">To</label>
-                      <div className="relative">
-                        <Plane className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90" />
-                        <input
-                          type="text"
-                          value={destination}
-                          onChange={(e) => setDestination(e.target.value)}
-                          placeholder="City or airport"
-                          className="w-full pl-9 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:bg-white text-gray-900 placeholder-gray-400 text-sm"
-                        />
-                      </div>
+                      <AirportAutocomplete
+                        value={destination}
+                        onChange={(code, display) => {
+                          setDestination(code);
+                          setDestinationDisplay(display);
+                        }}
+                        placeholder="City or airport"
+                        icon="destination"
+                      />
                     </div>
                   </div>
 
