@@ -18,6 +18,67 @@ const HERO_CITIES = [
   { name: 'Dubai, UAE', gradient: 'from-yellow-400 via-amber-500 to-orange-600' },
 ];
 
+// Airport code to city name mapping for better UX
+const AIRPORT_CITIES: Record<string, string> = {
+  // North America
+  'JFK': 'New York', 'LGA': 'New York', 'EWR': 'Newark', 'NYC': 'New York',
+  'LAX': 'Los Angeles', 'SFO': 'San Francisco', 'ORD': 'Chicago', 'MIA': 'Miami',
+  'ATL': 'Atlanta', 'DFW': 'Dallas', 'BOS': 'Boston', 'SEA': 'Seattle',
+  'DEN': 'Denver', 'IAD': 'Washington DC', 'DCA': 'Washington DC', 'PHX': 'Phoenix',
+  'YYZ': 'Toronto', 'YVR': 'Vancouver', 'YUL': 'Montreal', 'MEX': 'Mexico City',
+  // Europe
+  'LHR': 'London', 'LGW': 'London', 'STN': 'London', 'CDG': 'Paris', 'ORY': 'Paris',
+  'AMS': 'Amsterdam', 'FRA': 'Frankfurt', 'MUC': 'Munich', 'FCO': 'Rome', 'ROM': 'Rome',
+  'MAD': 'Madrid', 'BCN': 'Barcelona', 'LIS': 'Lisbon', 'DUB': 'Dublin',
+  'ZRH': 'Zurich', 'VIE': 'Vienna', 'CPH': 'Copenhagen', 'OSL': 'Oslo',
+  'ARN': 'Stockholm', 'HEL': 'Helsinki', 'WAW': 'Warsaw', 'PRG': 'Prague',
+  'BRU': 'Brussels', 'MXP': 'Milan', 'ATH': 'Athens', 'IST': 'Istanbul',
+  // Africa
+  'LOS': 'Lagos', 'ABV': 'Abuja', 'ACC': 'Accra', 'NBO': 'Nairobi',
+  'ADD': 'Addis Ababa', 'JNB': 'Johannesburg', 'CPT': 'Cape Town', 'CAI': 'Cairo',
+  'CMN': 'Casablanca', 'ALG': 'Algiers', 'TUN': 'Tunis', 'DAR': 'Dar es Salaam',
+  'KGL': 'Kigali', 'EBB': 'Entebbe', 'DKR': 'Dakar', 'ABJ': 'Abidjan',
+  // Asia
+  'DXB': 'Dubai', 'AUH': 'Abu Dhabi', 'DOH': 'Doha', 'JED': 'Jeddah', 'RUH': 'Riyadh',
+  'HKG': 'Hong Kong', 'SIN': 'Singapore', 'BKK': 'Bangkok', 'KUL': 'Kuala Lumpur',
+  'NRT': 'Tokyo', 'HND': 'Tokyo', 'ICN': 'Seoul', 'PEK': 'Beijing', 'PVG': 'Shanghai',
+  'DEL': 'Delhi', 'BOM': 'Mumbai', 'BLR': 'Bangalore', 'MAA': 'Chennai', 'AMD': 'Ahmedabad',
+  'MNL': 'Manila', 'CGK': 'Jakarta', 'SGN': 'Ho Chi Minh', 'HAN': 'Hanoi',
+  // Australia & Pacific
+  'SYD': 'Sydney', 'MEL': 'Melbourne', 'BNE': 'Brisbane', 'AKL': 'Auckland',
+  // South America
+  'GRU': 'São Paulo', 'GIG': 'Rio de Janeiro', 'EZE': 'Buenos Aires', 'BOG': 'Bogotá',
+  'LIM': 'Lima', 'SCL': 'Santiago',
+};
+
+const getCityName = (code: string): string => {
+  return AIRPORT_CITIES[code.toUpperCase()] || code;
+};
+
+const getTimeAgo = (dateString: string): string => {
+  const now = new Date();
+  const checked = new Date(dateString);
+  const diffMs = now.getTime() - checked.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return 'Yesterday';
+  return `${diffDays}d ago`;
+};
+
+const formatDateWithDay = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
 interface CartItem {
   id: string;
   type: 'flight' | 'hotel' | 'car';
