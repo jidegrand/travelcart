@@ -174,6 +174,7 @@ export default function AppDashboard() {
   const [notifText, setNotifText] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [userPhone, setUserPhone] = useState('');
+  const [notifSaved, setNotifSaved] = useState(false);
   const [cityIndex, setCityIndex] = useState(0);
   const [showSearchExpanded, setShowSearchExpanded] = useState(false);
   const [pushNotification, setPushNotification] = useState<CartItem | null>(null);
@@ -1548,6 +1549,22 @@ export default function AppDashboard() {
                       </label>
                       <p className="text-xs text-gray-400 ml-6 mt-0.5">Instant browser alerts when prices hit your target</p>
                     </div>
+
+                    {/* Save Button */}
+                    <button
+                      onClick={() => {
+                        setNotifSaved(true);
+                        setTimeout(() => setNotifSaved(false), 2500);
+                      }}
+                      disabled={notifSaved}
+                      className={`w-full py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                        notifSaved
+                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                          : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98]'
+                      }`}
+                    >
+                      {notifSaved ? 'Saved!' : 'Save preferences'}
+                    </button>
                   </div>
                 )}
                 <button
