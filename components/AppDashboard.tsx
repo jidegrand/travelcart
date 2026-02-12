@@ -171,6 +171,7 @@ export default function AppDashboard() {
   const [showNotifSettings, setShowNotifSettings] = useState(false);
   const [notifEmail, setNotifEmail] = useState(true);
   const [notifPush, setNotifPush] = useState(false);
+  const [notifText, setNotifText] = useState(false);
   const [cityIndex, setCityIndex] = useState(0);
   const [showSearchExpanded, setShowSearchExpanded] = useState(false);
   const [pushNotification, setPushNotification] = useState<CartItem | null>(null);
@@ -1493,6 +1494,18 @@ export default function AppDashboard() {
                         Email alerts
                       </label>
                       <p className="text-xs text-gray-400 ml-6 mt-0.5">Get price drop alerts sent to your inbox</p>
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notifText}
+                          onChange={() => setNotifText(!notifText)}
+                          className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        Text alerts (SMS)
+                      </label>
+                      <p className="text-xs text-gray-400 ml-6 mt-0.5">Get SMS messages for price drops and booking reminders</p>
                     </div>
                     <div>
                       <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
