@@ -1144,111 +1144,172 @@ export default function AppDashboard() {
                 {items.map(item => {
                   const isBuySignal = item.signal === 'BUY';
                   const isSpikeSignal = item.signal === 'SPIKE';
+                  const priceDiff = item.current_price - item.baseline_price;
+                  const priceDiffPercent = Math.abs(Math.round((priceDiff / item.baseline_price) * 100));
+                  const isBelow = item.current_price < item.baseline_price;
+                  const targetDiff = item.current_price - item.target_price;
+                  const progressToTarget = Math.max(0, Math.min(100, ((item.baseline_price - item.current_price) / (item.baseline_price - item.target_price)) * 100));
+
                   return (
                   <div
                     key={item.id}
                     className={`bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-all group ${
-                      isSpikeSignal ? 'border-red-200 hover:shadow-red-100/50' : 'border-gray-100 hover:shadow-indigo-100/50'
+                      isBuySignal ? 'border-emerald-200 ring-1 ring-emerald-100' :
+                      isSpikeSignal ? 'border-red-200 ring-1 ring-red-100' :
+                      'border-gray-100'
                     }`}
                   >
                     <div className="p-5">
+                      {/* Header Row */}
                       <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                        <div className="flex items-start gap-3">
+                          {/* Icon */}
+                          <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
                             isBuySignal
-                              ? 'bg-gradient-to-br from-emerald-50 to-teal-50'
+                              ? 'bg-gradient-to-br from-emerald-100 to-teal-100'
                               : isSpikeSignal
-                                ? 'bg-gradient-to-br from-red-50 to-orange-50'
-                                : 'bg-gradient-to-br from-indigo-50 to-violet-50'
+                                ? 'bg-gradient-to-br from-red-100 to-orange-100'
+                                : 'bg-gradient-to-br from-indigo-100 to-violet-100'
                           }`}>
-                            <Plane className={`w-6 h-6 ${
+                            <Plane className={`w-5 h-5 ${
                               isBuySignal ? 'text-emerald-600' : isSpikeSignal ? 'text-red-600' : 'text-indigo-600'
                             }`} />
                           </div>
+
+                          {/* Route & Details */}
                           <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-bold text-gray-900 text-lg tracking-tight">
-                                {item.origin} <span className="text-gray-300 font-normal">→</span> {item.destination}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-semibold text-gray-900">
+                                {getCityName(item.origin)}
+                                <span className="text-gray-300 mx-1.5">→</span>
+                                {getCityName(item.destination)}
                               </h3>
-                              {item.hold_active && (
-                                <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">
-                                  <Lock className="w-2.5 h-2.5" /> Held
-                                </span>
-                              )}
-                              {item.reminders_set && (
-                                <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded-full">
-                                  🗓️ 2
-                                </span>
-                              )}
+                              <span className="text-xs text-gray-400 font-medium">
+                                {item.origin}–{item.destination}
+                              </span>
                             </div>
-                            <p className="text-gray-400 text-sm">
-                              {formatDate(item.departure_date)}
-                              {item.return_date && ` – ${formatDate(item.return_date)}`}
-                              {' · '}{item.travelers} traveler{item.travelers > 1 ? 's' : ''}
-                            </p>
+                            <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                              <span>{formatDateWithDay(item.departure_date)}</span>
+                              {item.return_date && (
+                                <>
+                                  <span className="text-gray-300">→</span>
+                                  <span>{formatDateWithDay(item.return_date)}</span>
+                                </>
+                              )}
+                              <span className="text-gray-300">·</span>
+                              <span>{item.travelers} traveler{item.travelers > 1 ? 's' : ''}</span>
+                            </div>
                           </div>
                         </div>
+
+                        {/* Price & Trend */}
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-gray-900">${Math.round(item.current_price)}</p>
-                          {item.current_price < item.baseline_price && (
-                            <div className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full mt-1">
-                              <TrendingDown className="w-3 h-3" />
-                              ${Math.round(item.baseline_price - item.current_price)} saved
-                            </div>
-                          )}
-                          {isSpikeSignal && (
-                            <div className="inline-flex items-center gap-1 text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full mt-1">
-                              <TrendingUp className="w-3 h-3" />
-                              +${Math.round(item.current_price - item.baseline_price)}
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2 justify-end">
+                            <p className="text-2xl font-bold text-gray-900">
+                              ${Math.round(item.current_price).toLocaleString()}
+                            </p>
+                            {priceDiff !== 0 && (
+                              <div className={`flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded ${
+                                isBelow
+                                  ? 'text-emerald-700 bg-emerald-50'
+                                  : 'text-red-700 bg-red-50'
+                              }`}>
+                                {isBelow ? (
+                                  <TrendingDown className="w-3 h-3" />
+                                ) : (
+                                  <TrendingUp className="w-3 h-3" />
+                                )}
+                                {priceDiffPercent}%
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-400 mt-0.5">per person</p>
+                        </div>
+                      </div>
+
+                      {/* Progress to Target */}
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="text-gray-500">Progress to target</span>
+                          <span className={`font-semibold ${
+                            item.current_price <= item.target_price
+                              ? 'text-emerald-600'
+                              : 'text-gray-600'
+                          }`}>
+                            {item.current_price <= item.target_price
+                              ? '✓ Target reached!'
+                              : `$${Math.round(targetDiff)} above target`
+                            }
+                          </span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              item.current_price <= item.target_price
+                                ? 'bg-gradient-to-r from-emerald-400 to-teal-400'
+                                : 'bg-gradient-to-r from-indigo-400 to-violet-400'
+                            }`}
+                            style={{ width: `${Math.min(100, progressToTarget)}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-xs mt-1.5">
+                          <span className="text-gray-400">
+                            Started: ${Math.round(item.baseline_price).toLocaleString()}
+                          </span>
+                          <span className="text-indigo-600 font-medium">
+                            Target: ${Math.round(item.target_price).toLocaleString()}
+                          </span>
                         </div>
                       </div>
 
                       {/* Price History Sparkline */}
-                      <div className="flex items-end gap-0.5 h-10 mb-4 px-1">
-                        {(item.priceHistory.length > 0 ? item.priceHistory : [item.current_price, item.current_price * 1.02, item.current_price * 0.98, item.current_price * 1.01, item.current_price]).map((price, i, arr) => {
-                          const max = Math.max(...arr);
-                          const min = Math.min(...arr);
-                          const range = max - min || 1;
-                          const height = ((price - min) / range) * 100;
-                          const isLast = i === arr.length - 1;
-                          return (
-                            <div
-                              key={i}
-                              className={`flex-1 rounded-sm transition-all ${
-                                isLast
-                                  ? isBuySignal ? 'bg-emerald-400' : isSpikeSignal ? 'bg-red-400' : 'bg-indigo-500'
-                                  : 'bg-gray-100 group-hover:bg-gray-200'
-                              }`}
-                              style={{ height: `${Math.max(20, height)}%` }}
-                            />
-                          );
-                        })}
-                      </div>
+                      {item.priceHistory.length > 1 && (
+                        <div className="flex items-end gap-0.5 h-8 mb-4 px-1">
+                          {item.priceHistory.slice(-10).map((price, i, arr) => {
+                            const max = Math.max(...arr);
+                            const min = Math.min(...arr);
+                            const range = max - min || 1;
+                            const height = ((price - min) / range) * 100;
+                            const isLast = i === arr.length - 1;
+                            return (
+                              <div
+                                key={i}
+                                className={`flex-1 rounded-sm transition-all ${
+                                  isLast
+                                    ? isBuySignal ? 'bg-emerald-400' : isSpikeSignal ? 'bg-red-400' : 'bg-indigo-500'
+                                    : 'bg-gray-200'
+                                }`}
+                                style={{ height: `${Math.max(15, height)}%` }}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
 
-                      {/* Meta info */}
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-3 text-gray-400">
-                          <span className="flex items-center gap-1 bg-gray-50 px-2.5 py-1 rounded-lg">
-                            <Target className="w-3.5 h-3.5" />
-                            Target: ${Math.round(item.target_price)}
-                          </span>
-                          <span className="flex items-center gap-1">
+                      {/* Footer Meta */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {item.hold_active && (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">
+                              <Lock className="w-3 h-3" /> Price held
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1 text-xs text-gray-400">
                             <Clock className="w-3.5 h-3.5" />
-                            {new Date(item.last_checked).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            Updated {getTimeAgo(item.last_checked)}
                           </span>
                         </div>
                         <button
                           onClick={() => handleDelete(item.id)}
-                          className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                          title="Remove from watchlist"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
 
-                    {/* Signal Bar */}
+                    {/* Action Bar */}
                     <button
                       onClick={() => setSelectedItem(item)}
                       className={`w-full px-5 py-3.5 flex items-center justify-between cursor-pointer transition-all ${
@@ -1256,7 +1317,7 @@ export default function AppDashboard() {
                           ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600'
                           : isSpikeSignal
                             ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600'
-                            : 'bg-gradient-to-r from-indigo-50 to-violet-50 text-indigo-700 hover:from-indigo-100 hover:to-violet-100'
+                            : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 hover:from-indigo-50 hover:to-violet-50 hover:text-indigo-700'
                       }`}
                     >
                       <span className="font-semibold text-sm">
@@ -1264,11 +1325,11 @@ export default function AppDashboard() {
                           ? '🎯 Target hit — Book now!'
                           : isSpikeSignal
                             ? '🚨 Price spiking — Act fast!'
-                            : `⏳ Wait — book ${item.optimal_book_window || 'soon'}`
+                            : `⏳ Wait — book ${item.optimal_book_window || 'when price drops'}`
                         }
                       </span>
                       <ChevronRight className={`w-5 h-5 ${
-                        isBuySignal || isSpikeSignal ? 'text-white/70' : 'text-indigo-400'
+                        isBuySignal || isSpikeSignal ? 'text-white/70' : 'text-gray-400'
                       }`} />
                     </button>
                   </div>
