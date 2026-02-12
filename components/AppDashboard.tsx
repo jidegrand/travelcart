@@ -172,6 +172,8 @@ export default function AppDashboard() {
   const [notifEmail, setNotifEmail] = useState(true);
   const [notifPush, setNotifPush] = useState(false);
   const [notifText, setNotifText] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [userPhone, setUserPhone] = useState('');
   const [cityIndex, setCityIndex] = useState(0);
   const [showSearchExpanded, setShowSearchExpanded] = useState(false);
   const [pushNotification, setPushNotification] = useState<CartItem | null>(null);
@@ -1494,6 +1496,17 @@ export default function AppDashboard() {
                         Email alerts
                       </label>
                       <p className="text-xs text-gray-400 ml-6 mt-0.5">Get price drop alerts sent to your inbox</p>
+                      {notifEmail && (
+                        <div className="ml-6 mt-2">
+                          <input
+                            type="email"
+                            value={userEmail}
+                            onChange={(e) => setUserEmail(e.target.value)}
+                            placeholder="you@example.com"
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-700 placeholder-gray-300"
+                          />
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
@@ -1506,6 +1519,17 @@ export default function AppDashboard() {
                         Text alerts (SMS)
                       </label>
                       <p className="text-xs text-gray-400 ml-6 mt-0.5">Get SMS messages for price drops and booking reminders</p>
+                      {notifText && (
+                        <div className="ml-6 mt-2">
+                          <input
+                            type="tel"
+                            value={userPhone}
+                            onChange={(e) => setUserPhone(e.target.value)}
+                            placeholder="+1 (555) 123-4567"
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-700 placeholder-gray-300"
+                          />
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
